@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SOMO — Find & Book Parking Instantly</title>
+  <meta name="description" content="SOMO connects drivers with nearby parking spaces in real time. Find, book, and pay for parking in seconds." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:   #0a0a0a;
+      --gray-900:#111827;
+      --gray-700:#374151;
+      --gray-500:#6b7280;
+      --gray-300:#d1d5db;
+      --gray-100:#f3f4f6;
+      --gray-50: #f9fafb;
+      --white:   #ffffff;
+      --green:   #10b981;
+      --green-d: #059669;
+      --green-l: #d1fae5;
+      --radius:  16px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--white);
+      color: var(--gray-900);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--gray-100);
+      padding: 0 24px;
+      height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo { font-size: 22px; font-weight: 900; color: var(--gray-900); letter-spacing: -0.5px; }
+    .nav-logo span { color: var(--green); }
+    .nav-links { display: flex; align-items: center; gap: 32px; }
+    .nav-links a { font-size: 14px; font-weight: 500; color: var(--gray-500); text-decoration: none; transition: color .2s; }
+    .nav-links a:hover { color: var(--gray-900); }
+    .btn-nav {
+      background: var(--gray-900); color: var(--white);
+      padding: 10px 20px; border-radius: 100px;
+      font-size: 14px; font-weight: 600;
+      text-decoration: none; transition: all .2s;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .btn-nav:hover { background: var(--green); transform: translateY(-1px); }
+    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
+    .hamburger span { width: 24px; height: 2px; background: var(--gray-900); border-radius: 2px; }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      padding: 120px 24px 80px;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(160deg, #f0fdf4 0%, #ffffff 50%, #f9fafb 100%);
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; top: -200px; right: -200px;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(16,185,129,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-inner {
+      max-width: 1100px; width: 100%; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--green-l); color: var(--green-d);
+      padding: 6px 14px; border-radius: 100px;
+      font-size: 13px; font-weight: 600; margin-bottom: 24px;
+    }
+    .hero-badge::before { content: '●'; font-size: 8px; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+    h1 {
+      font-size: clamp(36px, 5vw, 60px);
+      font-weight: 900; line-height: 1.05;
+      letter-spacing: -1.5px; color: var(--gray-900);
+      margin-bottom: 20px;
+    }
+    h1 span { color: var(--green); }
+    .hero-sub {
+      font-size: 18px; color: var(--gray-500); line-height: 1.7;
+      margin-bottom: 36px; max-width: 460px;
+    }
+    .hero-ctas { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--gray-900); color: var(--white);
+      padding: 16px 28px; border-radius: 100px;
+      font-size: 15px; font-weight: 700;
+      text-decoration: none; transition: all .2s;
+      box-shadow: 0 4px 24px rgba(17,24,39,0.18);
+    }
+    .btn-primary:hover { background: var(--black); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(17,24,39,0.25); }
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--white); color: var(--gray-900);
+      padding: 16px 28px; border-radius: 100px;
+      font-size: 15px; font-weight: 700;
+      text-decoration: none; transition: all .2s;
+      border: 2px solid var(--gray-300);
+    }
+    .btn-secondary:hover { border-color: var(--gray-900); transform: translateY(-2px); }
+    .hero-visual {
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+    }
+    .phone-mockup {
+      width: 280px; height: 560px;
+      background: var(--gray-900);
+      border-radius: 40px;
+      border: 8px solid var(--gray-900);
+      box-shadow: 0 32px 80px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.05);
+      overflow: hidden; position: relative;
+      display: flex; flex-direction: column;
+    }
+    .phone-screen {
+      flex: 1; background: linear-gradient(160deg, #0a0a0a 0%, #1a1a1a 100%);
+      display: flex; flex-direction: column; padding: 24px 20px 20px;
+      position: relative; overflow: hidden;
+    }
+    .phone-notch {
+      width: 80px; height: 24px; background: var(--black);
+      border-radius: 0 0 16px 16px; margin: 0 auto 16px;
+    }
+    .phone-greeting { color: rgba(255,255,255,0.5); font-size: 11px; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; }
+    .phone-name { color: white; font-size: 22px; font-weight: 800; margin-top: 2px; margin-bottom: 20px; }
+    .phone-search {
+      background: rgba(255,255,255,0.08); border-radius: 14px;
+      padding: 12px 16px; display: flex; align-items: center; gap: 10px;
+      color: rgba(255,255,255,0.4); font-size: 13px; margin-bottom: 20px;
+    }
+    .phone-hero-btn {
+      background: white; border-radius: 20px; padding: 16px 20px;
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;
+    }
+    .phone-hero-btn-text { font-size: 16px; font-weight: 800; color: var(--gray-900); }
+    .phone-hero-btn-sub { font-size: 11px; color: var(--gray-500); margin-top: 2px; }
+    .phone-hero-btn-icon {
+      width: 36px; height: 36px; background: var(--gray-900); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .phone-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .phone-grid-item {
+      background: rgba(255,255,255,0.06); border-radius: 14px;
+      padding: 12px 8px; text-align: center;
+    }
+    .phone-grid-icon { font-size: 22px; margin-bottom: 4px; }
+    .phone-grid-label { font-size: 10px; color: rgba(255,255,255,0.6); font-weight: 500; }
+    .phone-float-1 {
+      position: absolute; bottom: -20px; right: -30px;
+      width: 160px; background: white; border-radius: 20px;
+      padding: 14px 16px; box-shadow: 0 16px 40px rgba(0,0,0,0.15);
+    }
+    .phone-float-label { font-size: 10px; color: var(--gray-500); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .phone-float-value { font-size: 18px; font-weight: 800; color: var(--gray-900); margin-top: 2px; }
+    .phone-float-sub { font-size: 11px; color: var(--green); font-weight: 600; }
+    .phone-float-2 {
+      position: absolute; top: 40px; left: -40px;
+      background: var(--gray-900); border-radius: 16px;
+      padding: 12px 16px; box-shadow: 0 16px 40px rgba(0,0,0,0.2);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .phone-float-2-icon { font-size: 24px; }
+    .phone-float-2-text { color: white; font-size: 12px; font-weight: 700; }
+    .phone-float-2-sub { color: rgba(255,255,255,0.5); font-size: 10px; }
+
+    /* ── STATS ── */
+    .stats {
+      background: var(--gray-900); padding: 48px 24px;
+    }
+    .stats-inner {
+      max-width: 900px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      divide-x: 1px solid rgba(255,255,255,0.1);
+    }
+    .stat-item { text-align: center; padding: 8px 24px; border-right: 1px solid rgba(255,255,255,0.08); }
+    .stat-item:last-child { border-right: none; }
+    .stat-num { font-size: 40px; font-weight: 900; color: var(--white); letter-spacing: -1px; }
+    .stat-num span { color: var(--green); }
+    .stat-label { font-size: 14px; color: rgba(255,255,255,0.5); font-weight: 500; margin-top: 4px; }
+
+    /* ── HOW IT WORKS ── */
+    .section { padding: 96px 24px; }
+    .section-inner { max-width: 1100px; margin: 0 auto; }
+    .section-tag {
+      display: inline-block; background: var(--green-l); color: var(--green-d);
+      padding: 4px 12px; border-radius: 100px;
+      font-size: 12px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .section-title {
+      font-size: clamp(28px, 4vw, 44px); font-weight: 900;
+      letter-spacing: -1px; color: var(--gray-900);
+      margin-bottom: 16px; line-height: 1.1;
+    }
+    .section-sub { font-size: 17px; color: var(--gray-500); max-width: 520px; line-height: 1.7; margin-bottom: 56px; }
+
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+    .step {
+      background: var(--gray-50); border-radius: 24px; padding: 36px 28px;
+      border: 1px solid var(--gray-100); position: relative;
+      transition: all .25s;
+    }
+    .step:hover { background: white; box-shadow: 0 16px 48px rgba(0,0,0,0.08); transform: translateY(-4px); }
+    .step-num {
+      width: 44px; height: 44px; background: var(--gray-900); color: white;
+      border-radius: 14px; display: flex; align-items: center; justify-content: center;
+      font-size: 16px; font-weight: 800; margin-bottom: 20px;
+    }
+    .step-icon { font-size: 32px; margin-bottom: 16px; }
+    .step h3 { font-size: 18px; font-weight: 700; color: var(--gray-900); margin-bottom: 10px; }
+    .step p { font-size: 14px; color: var(--gray-500); line-height: 1.7; }
+    .step-connector {
+      position: absolute; top: 50px; right: -18px; width: 36px; height: 2px;
+      background: var(--gray-300); z-index: 1;
+    }
+    .step-connector::after {
+      content: ''; position: absolute; right: -6px; top: -4px;
+      width: 0; height: 0;
+      border-left: 8px solid var(--gray-300);
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid transparent;
+    }
+
+    /* ── FEATURES ── */
+    .features-bg { background: var(--gray-50); }
+    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .feature-card {
+      background: white; border-radius: 20px; padding: 28px;
+      border: 1px solid var(--gray-100);
+      transition: all .25s;
+    }
+    .feature-card:hover { box-shadow: 0 12px 40px rgba(0,0,0,0.08); transform: translateY(-3px); }
+    .feature-icon {
+      width: 52px; height: 52px; border-radius: 16px; background: var(--gray-100);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; margin-bottom: 16px;
+    }
+    .feature-card h3 { font-size: 16px; font-weight: 700; color: var(--gray-900); margin-bottom: 8px; }
+    .feature-card p { font-size: 13px; color: var(--gray-500); line-height: 1.7; }
+
+    /* ── PARTNER ── */
+    .partner-section {
+      background: var(--gray-900); padding: 96px 24px;
+      position: relative; overflow: hidden;
+    }
+    .partner-section::before {
+      content: ''; position: absolute; top: -100px; left: -100px;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(16,185,129,0.15) 0%, transparent 70%);
+    }
+    .partner-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center;
+    }
+    .partner-tag { background: rgba(16,185,129,0.15); color: var(--green); }
+    .partner-title { color: white; }
+    .partner-sub { color: rgba(255,255,255,0.55); }
+    .partner-perks { display: flex; flex-direction: column; gap: 16px; margin-bottom: 36px; }
+    .partner-perk {
+      display: flex; align-items: flex-start; gap: 14px;
+      background: rgba(255,255,255,0.05); border-radius: 16px; padding: 16px 20px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .perk-icon { font-size: 22px; flex-shrink: 0; }
+    .perk-text h4 { font-size: 14px; font-weight: 700; color: white; margin-bottom: 2px; }
+    .perk-text p { font-size: 13px; color: rgba(255,255,255,0.5); }
+    .btn-green {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--green); color: white;
+      padding: 16px 28px; border-radius: 100px;
+      font-size: 15px; font-weight: 700;
+      text-decoration: none; transition: all .2s;
+      box-shadow: 0 4px 24px rgba(16,185,129,0.35);
+    }
+    .btn-green:hover { background: var(--green-d); transform: translateY(-2px); }
+
+    .earnings-card {
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 28px; padding: 32px;
+    }
+    .earnings-title { color: rgba(255,255,255,0.5); font-size: 12px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 8px; }
+    .earnings-amount { color: white; font-size: 48px; font-weight: 900; letter-spacing: -2px; margin-bottom: 4px; }
+    .earnings-amount span { color: var(--green); }
+    .earnings-sub { color: rgba(255,255,255,0.4); font-size: 13px; margin-bottom: 28px; }
+    .earnings-bar-label { display: flex; justify-content: space-between; margin-bottom: 6px; }
+    .earnings-bar-label span { font-size: 12px; color: rgba(255,255,255,0.5); font-weight: 500; }
+    .earnings-bar-track { height: 6px; background: rgba(255,255,255,0.08); border-radius: 6px; margin-bottom: 16px; overflow: hidden; }
+    .earnings-bar-fill { height: 100%; background: var(--green); border-radius: 6px; }
+    .earnings-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 20px; }
+    .earnings-stat { background: rgba(255,255,255,0.04); border-radius: 14px; padding: 14px; text-align: center; }
+    .earnings-stat-num { font-size: 20px; font-weight: 800; color: white; }
+    .earnings-stat-label { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+
+    /* ── DOWNLOAD ── */
+    .download-section { padding: 96px 24px; text-align: center; }
+    .download-inner { max-width: 600px; margin: 0 auto; }
+    .download-section .section-title { text-align: center; }
+    .download-section .section-sub { margin: 0 auto 40px; text-align: center; }
+    .store-btn {
+      display: inline-flex; align-items: center; gap: 12px;
+      background: var(--gray-900); color: white;
+      padding: 14px 24px; border-radius: 16px;
+      text-decoration: none; transition: all .2s;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .store-btn:hover { background: var(--black); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+    .store-btn-icon { font-size: 28px; }
+    .store-btn-text { text-align: left; }
+    .store-btn-label { font-size: 10px; color: rgba(255,255,255,0.6); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+    .store-btn-name { font-size: 16px; font-weight: 700; }
+    .store-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--gray-900); padding: 48px 24px 32px;
+    }
+    .footer-inner { max-width: 1100px; margin: 0 auto; }
+    .footer-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 32px; margin-bottom: 40px; flex-wrap: wrap; }
+    .footer-brand .nav-logo { font-size: 24px; color: white; margin-bottom: 12px; display: block; }
+    .footer-brand p { font-size: 13px; color: rgba(255,255,255,0.4); max-width: 240px; line-height: 1.7; }
+    .footer-links h4 { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.5); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 16px; }
+    .footer-links ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .footer-links a { font-size: 14px; color: rgba(255,255,255,0.6); text-decoration: none; transition: color .2s; }
+    .footer-links a:hover { color: white; }
+    .footer-bottom { border-top: 1px solid rgba(255,255,255,0.08); padding-top: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .footer-bottom p { font-size: 13px; color: rgba(255,255,255,0.3); }
+    .footer-bottom a { color: rgba(255,255,255,0.4); text-decoration: none; }
+    .footer-bottom a:hover { color: var(--green); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      .hero-inner { grid-template-columns: 1fr; gap: 48px; text-align: center; }
+      .hero-visual { justify-content: center; }
+      .hero-ctas { justify-content: center; }
+      .hero-sub { margin: 0 auto 36px; }
+      .steps { grid-template-columns: 1fr; }
+      .step-connector { display: none; }
+      .features-grid { grid-template-columns: 1fr; }
+      .partner-inner { grid-template-columns: 1fr; }
+      .stats-inner { grid-template-columns: 1fr; }
+      .stat-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.08); padding: 16px; }
+      .stat-item:last-child { border-bottom: none; }
+      .phone-mockup { width: 240px; height: 480px; }
+      .phone-float-1 { right: -10px; }
+      .phone-float-2 { left: -10px; }
+      .footer-top { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">S<span>O</span>MO</div>
+    <div class="nav-links">
+      <a href="#how-it-works">How it works</a>
+      <a href="#features">Features</a>
+      <a href="#partners">For Partners</a>
+      <a href="privacy-policy.html">Privacy</a>
+    </div>
+    <a href="https://play.google.com/store/apps/details?id=app.somo.parkzen" class="btn-nav" target="_blank" rel="noopener">
+      <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M3.18 23.72a2 2 0 0 1-.93-.87L13 12 2.25 1.15a2 2 0 0 1 .93-.87l.06-.03 12.1 11.4v.7L3.24 23.75l-.06-.03zM20.81 13.5l-2.76 1.6L15.1 12l2.95-2.95 2.77 1.6c.79.46.79 1.85 0 2.3-.01.02-.01.04-.01.05zM3.95.65l10.3 10.3L7.39.37 3.95.65zm10.3 12.4L3.95 23.35l3.44.28 6.86-10.58z"/></svg>
+      Get the App
+    </a>
+    <div class="hamburger">
+      <span></span><span></span><span></span>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div>
+        <div class="hero-badge">Now live in Hyderabad</div>
+        <h1>Park smarter,<br /><span>not harder.</span></h1>
+        <p class="hero-sub">SOMO connects you with verified parking spaces nearby. Find a spot, book it in seconds, and pay seamlessly — all from your phone.</p>
+        <div class="hero-ctas">
+          <a href="https://play.google.com/store/apps/details?id=app.somo.parkzen" class="btn-primary" target="_blank" rel="noopener">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M3.18 23.72a2 2 0 0 1-.93-.87L13 12 2.25 1.15a2 2 0 0 1 .93-.87l.06-.03 12.1 11.4v.7L3.24 23.75l-.06-.03zM20.81 13.5l-2.76 1.6L15.1 12l2.95-2.95 2.77 1.6c.79.46.79 1.85 0 2.3-.01.02-.01.04-.01.05zM3.95.65l10.3 10.3L7.39.37 3.95.65zm10.3 12.4L3.95 23.35l3.44.28 6.86-10.58z"/></svg>
+            Download on Android
+          </a>
+          <a href="#how-it-works" class="btn-secondary">See how it works →</a>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="phone-float-2">
+          <div class="phone-float-2-icon">🅿️</div>
+          <div>
+            <div class="phone-float-2-text">Spot confirmed!</div>
+            <div class="phone-float-2-sub">200m away · ₹40/hr</div>
+          </div>
+        </div>
+        <div class="phone-mockup">
+          <div class="phone-screen">
+            <div class="phone-notch"></div>
+            <div class="phone-greeting">Good Morning</div>
+            <div class="phone-name">Rahul 🎫</div>
+            <div class="phone-search">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              Search area, landmark…
+            </div>
+            <div class="phone-hero-btn">
+              <div>
+                <div class="phone-hero-btn-text">Find Parking</div>
+                <div class="phone-hero-btn-sub">Select vehicle, we find a spot</div>
+              </div>
+              <div class="phone-hero-btn-icon">
+                <svg width="16" height="16" fill="white" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+              </div>
+            </div>
+            <div class="phone-grid">
+              <div class="phone-grid-item">
+                <div class="phone-grid-icon">📍</div>
+                <div class="phone-grid-label">Nearby</div>
+              </div>
+              <div class="phone-grid-item">
+                <div class="phone-grid-icon">📅</div>
+                <div class="phone-grid-label">Reserve</div>
+              </div>
+              <div class="phone-grid-item">
+                <div class="phone-grid-icon">⭐</div>
+                <div class="phone-grid-label">Premium</div>
+              </div>
+              <div class="phone-grid-item">
+                <div class="phone-grid-icon">🚿</div>
+                <div class="phone-grid-label">Car Wash</div>
+              </div>
+              <div class="phone-grid-item">
+                <div class="phone-grid-icon">⚡</div>
+                <div class="phone-grid-label">EV Charge</div>
+              </div>
+              <div class="phone-grid-item">
+                <div class="phone-grid-icon">🧑‍✈️</div>
+                <div class="phone-grid-label">Valet</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-float-1">
+          <div class="phone-float-label">Nearest spot</div>
+          <div class="phone-float-value">180 m</div>
+          <div class="phone-float-sub">✓ 4 slots available</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stats-inner">
+      <div class="stat-item">
+        <div class="stat-num">500<span>+</span></div>
+        <div class="stat-label">Parking Spots</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">10<span>K+</span></div>
+        <div class="stat-label">Happy Drivers</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">₹40<span>+</span></div>
+        <div class="stat-label">Average Hourly Rate</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <section class="section" id="how-it-works">
+    <div class="section-inner">
+      <div class="section-tag">How it works</div>
+      <h2 class="section-title">Park in 3 simple steps</h2>
+      <p class="section-sub">No apps to navigate, no phone calls, no cash. Just open SOMO and park.</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-icon">📍</div>
+          <h3>Find nearby spots</h3>
+          <p>Open the app — SOMO instantly shows verified parking spaces within 500m of your location with real-time slot availability.</p>
+          <div class="step-connector"></div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-icon">📱</div>
+          <h3>Book & pay instantly</h3>
+          <p>Select your vehicle type, choose a duration, and pay securely via UPI, card, or your SOMO Wallet. Confirmation in seconds.</p>
+          <div class="step-connector"></div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-icon">🅿️</div>
+          <h3>Show OTP & park</h3>
+          <p>Share the 4-digit OTP with the parking attendant on arrival. No paperwork, no waiting. Your spot is held for you.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section features-bg" id="features">
+    <div class="section-inner">
+      <div class="section-tag">Features</div>
+      <h2 class="section-title">Everything you need,<br />nothing you don't</h2>
+      <p class="section-sub">Built for Indian drivers who are tired of circling blocks looking for parking.</p>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🗺️</div>
+          <h3>Live Map View</h3>
+          <p>See all available spots on a live map. Colour-coded by availability so you know exactly where to go.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🚗</div>
+          <h3>All Vehicle Types</h3>
+          <p>Car, Bike, Cycle, or Truck — filter spots by your vehicle and see pricing tailored to you.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">💳</div>
+          <h3>Secure Payments</h3>
+          <p>Pay via UPI, debit/credit card, or net banking through Razorpay's PCI-compliant gateway.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">👛</div>
+          <h3>SOMO Wallet</h3>
+          <p>Top up once, pay instantly every time. Wallet credits never expire and refunds land here too.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h3>EV Charging</h3>
+          <p>Filter for spots with EV chargers. Charge your car while it's parked — no extra stops needed.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🧑‍✈️</div>
+          <h3>Valet Service</h3>
+          <p>Can't find the spot yourself? Book valet parking and let the attendant handle it for you.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <h3>Booking History</h3>
+          <p>Full history of all your parkings with receipts, duration, and payment details — always accessible.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🔔</div>
+          <h3>Push Notifications</h3>
+          <p>Get notified when your booking is confirmed, when time is running low, and when payment is received.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⚖️</div>
+          <h3>Dispute Resolution</h3>
+          <p>Raise a dispute within 48 hours if something goes wrong. Our team mediates and resolves it fairly.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PARTNERS -->
+  <section class="partner-section" id="partners">
+    <div class="partner-inner">
+      <div>
+        <div class="section-tag partner-tag">For Parking Partners</div>
+        <h2 class="section-title partner-title">Turn your unused<br />space into income</h2>
+        <p class="section-sub partner-sub">Got a parking space sitting idle? List it on SOMO and start earning from drivers who need it — no upfront cost.</p>
+        <div class="partner-perks">
+          <div class="partner-perk">
+            <div class="perk-icon">💰</div>
+            <div class="perk-text">
+              <h4>Set your own price</h4>
+              <p>You control the hourly rate for each vehicle type. Change it anytime.</p>
+            </div>
+          </div>
+          <div class="partner-perk">
+            <div class="perk-icon">📱</div>
+            <div class="perk-text">
+              <h4>Manage from your phone</h4>
+              <p>Accept bookings, verify OTPs, and track earnings — all from the partner dashboard.</p>
+            </div>
+          </div>
+          <div class="partner-perk">
+            <div class="perk-icon">💸</div>
+            <div class="perk-text">
+              <h4>Weekly payouts to your UPI</h4>
+              <p>Earnings are settled directly to your bank account every week.</p>
+            </div>
+          </div>
+        </div>
+        <a href="https://play.google.com/store/apps/details?id=app.somo.parkzen" class="btn-green" target="_blank" rel="noopener">
+          List your space for free →
+        </a>
+      </div>
+      <div>
+        <div class="earnings-card">
+          <div class="earnings-title">This month's earnings</div>
+          <div class="earnings-amount">₹<span>12,400</span></div>
+          <div class="earnings-sub">↑ 18% vs last month</div>
+          <div class="earnings-bar-label">
+            <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+          </div>
+          <div class="earnings-bar-track"><div class="earnings-bar-fill" style="width:72%"></div></div>
+          <div class="earnings-bar-label">
+            <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span>
+          </div>
+          <div class="earnings-bar-track"><div class="earnings-bar-fill" style="width:85%"></div></div>
+          <div class="earnings-stats">
+            <div class="earnings-stat">
+              <div class="earnings-stat-num">84</div>
+              <div class="earnings-stat-label">Bookings</div>
+            </div>
+            <div class="earnings-stat">
+              <div class="earnings-stat-num">4.8</div>
+              <div class="earnings-stat-label">Rating</div>
+            </div>
+            <div class="earnings-stat">
+              <div class="earnings-stat-num">96%</div>
+              <div class="earnings-stat-label">Occupancy</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DOWNLOAD -->
+  <section class="section download-section">
+    <div class="download-inner">
+      <div class="section-tag" style="margin:0 auto 16px;">Download now</div>
+      <h2 class="section-title">Your parking stress<br />ends today.</h2>
+      <p class="section-sub">Join thousands of drivers who've already stopped worrying about parking. Free to download.</p>
+      <div class="store-btns">
+        <a href="https://play.google.com/store/apps/details?id=app.somo.parkzen" class="store-btn" target="_blank" rel="noopener">
+          <div class="store-btn-icon">
+            <svg width="28" height="28" fill="white" viewBox="0 0 24 24"><path d="M3.18 23.72a2 2 0 0 1-.93-.87L13 12 2.25 1.15a2 2 0 0 1 .93-.87l.06-.03 12.1 11.4v.7L3.24 23.75l-.06-.03zM20.81 13.5l-2.76 1.6L15.1 12l2.95-2.95 2.77 1.6c.79.46.79 1.85 0 2.3-.01.02-.01.04-.01.05zM3.95.65l10.3 10.3L7.39.37 3.95.65zm10.3 12.4L3.95 23.35l3.44.28 6.86-10.58z"/></svg>
+          </div>
+          <div class="store-btn-text">
+            <div class="store-btn-label">Get it on</div>
+            <div class="store-btn-name">Google Play</div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <span class="nav-logo">S<span style="color:var(--green)">O</span>MO</span>
+          <p>Smart parking for Indian cities. Find, book, and pay for parking in seconds.</p>
+        </div>
+        <div class="footer-links">
+          <h4>Product</h4>
+          <ul>
+            <li><a href="#how-it-works">How it works</a></li>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#partners">For Partners</a></li>
+            <li><a href="https://play.google.com/store/apps/details?id=app.somo.parkzen" target="_blank" rel="noopener">Download App</a></li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h4>Company</h4>
+          <ul>
+            <li><a href="privacy-policy.html">Privacy Policy</a></li>
+            <li><a href="privacy-policy.html">Terms of Service</a></li>
+            <li><a href="mailto:support@somopark.com">support@somopark.com</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 SOMO by Uramus. All rights reserved.</p>
+        <p><a href="privacy-policy.html">Privacy Policy</a> · <a href="mailto:support@somopark.com">Contact</a></p>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
